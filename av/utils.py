@@ -1,4 +1,3 @@
-from tkinter import
 import os
 
 
@@ -25,7 +24,7 @@ class Scanner:
 
 def parse_shell_line(shell_line):
     attributes = list(filter(lambda attr: attr != "",shell_line.strip().split(" ")))
-    return attributes[0], attributes[1], attributes[2]
+    return attributes[0], attributes[1], attributes[2] if len(attributes) == 3 else None
 
 
 class Drive:
