@@ -1,6 +1,4 @@
-import platform, subprocess
-import time
-
+import platform, subprocess, time
 from utils import Scanner, Drive
 from tkinter import Tk, messagebox
 
@@ -31,7 +29,8 @@ class AntiVirus:
                 out = subprocess.check_output(args='wmic logicaldisk get DriveType, caption, VolumeSerialNumber',
                                               shell=True)
                 shell_lines = out.decode('utf-8').strip().split('\r\r\n')[1::]
-                flash_drives = [Drive(shell_line) for shell_line in shell_lines if Drive(shell_line).is_flash_drive()]
+                flash_drives = [Drive(shell_line) for shell_line in shell_lines
+                                if Drive(shell_line).is_flash_drive() and Drive(shell_line).id is not None]
                 self.update_connected_devices(flash_drives)
                 [self.handle(flash_drive) for flash_drive in flash_drives if flash_drive not in self.connected_drives]
                 time.sleep(1)
@@ -49,15 +48,15 @@ class AntiVirus:
         self.connected_drives.append(flash_drive)
         should_scan = messagebox.askyesno(
             title="New Flash Drive Detected",
-            message=f"A new flash drive named {flash_drive.name} detected\nDo you want to scan it?"
+            message=f"A new flash drive named '{flash_drive.name}' detected\nDo you want to scan it?"
         )
         if should_scan:
-            pot_threats = self.scanner.scan(flash_drive.name)
+            pot_threats = self.scanner.scan(flash_drive)
             for dir_name in pot_threats:
                 further_action = messagebox.askyesno(
                     title="Potential Threat Detected",
-                    message=f"{flash_drive.name} has a file called {dir_name} that may be harmful\n"
-                            f"do you want to take further action?"
+                    message=f"The flash drive '{flash_drive.name}' has a file called {dir_name} that may be harmful\n"
+                            f"Do you want to take further action?"
                 )
                 if further_action:
                     self.deal(flash_drive, dir_name)
@@ -67,4 +66,8 @@ class AntiVirus:
                                  if flash_drive in curr_connected_flash_drives]
 
     def deal(self, flash_drive, dir_name):
+        # show gui
+        # self.window.deiconify()
+        # time.sleep(1)
+        # self.window.withdraw()
         print(f"Dealing with bad file at {flash_drive.name}/{dir_name}")
