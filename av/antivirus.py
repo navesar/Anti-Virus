@@ -5,10 +5,17 @@ import ui
 from utils import Scanner, Drive
 from tkinter import Tk, messagebox
 
+config = {
+    "bad_endings": [".py", ".exe", ".js", ".java", ".ts", ".inf", ".bat", ".cmd"],
+    "check_exe": True,
+    "bad_names": ["autorun", "autoplay"],
+}
+
 
 class AntiVirus:
     def __init__(self):
-        self.scanner = Scanner()
+        ui.lunch(config)
+        self.scanner = Scanner(config)
         self.os = platform.system()
         self.window = Tk()
         self.window.withdraw()
@@ -16,9 +23,9 @@ class AntiVirus:
 
     def start(self):
         if self.os == "Windows":
-            self.win_av()  # WinAntiVirus().start()
+            self.win_av()
         elif self.os == "Linux":
-            self.lin_av()  # LinAntiVirus().start()
+            self.lin_av()
         else:
             messagebox.showinfo(
                 title="OS Not Supported",
@@ -59,14 +66,16 @@ class AntiVirus:
                     try:
                         path = result.stdout.split()[-1]
                     except IndexError:
-                        pass
+                        continue
 
                     d_name = path
                     d_type = 2
                     d_id = path.split("/")[-1]
-                    
-                    flash_drive = Drive(name=d_name, type=d_type, id=d_id)
+
+                    flash_drive = Drive(d_name=d_name, d_type=d_type, d_id=d_id)
                     self.handle(flash_drive)
+                elif device.action == 'remove':
+                    ...
         except KeyboardInterrupt:
             pass
         ui.end_popup(self.window)
@@ -93,7 +102,10 @@ class AntiVirus:
             self.handle_threats(flash_drive, pot_threats)
 
     def handle_threats(self, flash_drive, pot_threats):
-        pot_threats_str = "\n".join(f"*{path}" for path in pot_threats)
+        if len(pot_threats) > 10:
+            pot_threats_str = "\n".join(f"*{path}" for path in pot_threats[:10]) + ("\n."*3)
+        else:
+            pot_threats_str = "\n".join(f"*{path}" for path in pot_threats)
         further_action = messagebox.askyesno(
             title="Scanning Complete",
             message=f"The scan of '{flash_drive.name}' is complete\n"
@@ -139,60 +151,3 @@ class AntiVirus:
             # give the user info about which files we weren't able to remove due to os error
         else:
             return False
-
-
-# class WinAntiVirus(AntiVirus):
-#     def __init__(self):
-#         super().__init__()
-#
-#     def start(self):
-#         ui.start_popup(self.window)
-#         i = 0
-#         while True:
-#             i += 1
-#             print(f"loop{i}")
-#             try:
-#                 out = subprocess.check_output(args='wmic logicaldisk get DriveType, caption, VolumeSerialNumber',
-#                                               shell=True)
-#                 shell_lines = out.decode('utf-8').strip().split('\r\r\n')[1::]
-#                 drives = [Drive(shell_line=shell_line) for shell_line in shell_lines]
-#                 flash_drives = [drive for drive in drives if drive.is_flash_drive()]
-#                 self.update_connected_devices(flash_drives)
-#                 [self.handle(flash_drive) for flash_drive in flash_drives if flash_drive not in self.connected_drives]
-#                 time.sleep(1)
-#             except KeyboardInterrupt:
-#                 break
-#         ui.end_popup(self.window)
-#
-#
-# class LinAntiVirus(AntiVirus):
-#     def __init__(self):
-#         super().__init__()
-#
-#     def start(self):
-#         import pyudev
-#         ui.start_popup(self.window)
-#         context = pyudev.Context()
-#         monitor = pyudev.Monitor.from_netlink(context)
-#         monitor.filter_by(subsystem='block', device_type='disk')
-#         try:
-#             for device in iter(monitor.poll, None):
-#                 if device.action == 'add':
-#                     time.sleep(0.5)
-#                     block_dev_path = device.device_node
-#                     result = subprocess.run(["lsblk", block_dev_path], capture_output=True, text=True)
-#                     try:
-#                         path = result.stdout.split()[-1]
-#                     except IndexError:
-#                         pass
-#
-#                     d_name = path
-#                     d_type = 2
-#                     d_id = path.split("/")[-1]
-#
-#                     flash_drive = Drive(name=d_name, type=d_type, id=d_id)
-#                     self.handle(flash_drive)
-#         except KeyboardInterrupt:
-#             pass
-#         ui.end_popup(self.window)
-

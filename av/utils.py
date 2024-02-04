@@ -2,8 +2,8 @@ import os
 
 
 class Scanner:
-    def __init__(self):
-        self._endings = [".py", ".exe", ".js", ".java", ".ts", ".inf"]  # add more
+    def __init__(self, config):
+        self.config = config
 
     def scan(self, flash_drive):
         pot_threats = []
@@ -15,14 +15,19 @@ class Scanner:
         return pot_threats
 
     def potential_threat(self, dir_name, dir_path):
-        return self.bad_ending(dir_name) or dir_name.startswith("autorun") or dir_name.startswith("autoplay")
-        # or self.has_url(dir_path=dir_path)
+        return self.bad_ending(dir_name) or self.bad_name(dir_name) or self.check_exe(dir_path)
 
     def bad_ending(self, dir_name):
-        for ending in self._endings:
+        for ending in self.config["bad_endings"]:
             if dir_name.endswith(ending):
                 return True
         return False
+
+    def bad_name(self, dir_name):
+        return dir_name.split('.')[0] in self.config["bad_names"]
+
+    def check_exe(self, dir_path):
+        return os.access(dir_path, os.X_OK) if self.config["check_exe"] else False
 
     @staticmethod  # can be removed
     def remove(file_to_remove):
@@ -35,11 +40,11 @@ def parse_shell_line(shell_line):
 
 
 class Drive:
-    def __init__(self, name=None, type=None, id=None, shell_line=None):
+    def __init__(self, d_name=None, d_type=None, d_id=None, shell_line=None):
         if shell_line:
             self.name, self.type, self.id = parse_shell_line(shell_line)
         else:
-            self.name, self.type, self.id = name, type, id
+            self.name, self.type, self.id = d_name, d_type, d_id
 
     def __eq__(self, other):
         if isinstance(other, Drive):
@@ -47,7 +52,7 @@ class Drive:
         else:
             return False
 
-    def __str__(self):
+    def __repr__(self):
         return f"drive name:{self.name} | drive type:{self.type} | drive ID:{self.id}"
 
     def is_flash_drive(self):

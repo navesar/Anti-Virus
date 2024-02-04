@@ -19,7 +19,10 @@ def get_report(api_key, resource):
     url = 'https://www.virustotal.com/vtapi/v2/file/report'
     params = {'apikey': api_key, 'resource': resource}
     response = requests.get(url, params=params)
-    return response.json()
+    try:
+        return response.json()
+    except Exception:
+        return False
 
 
 def start(file_path):
