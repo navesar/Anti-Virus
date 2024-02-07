@@ -17,11 +17,13 @@ The project uses platform-specific methods to detect flash drives and provides a
 
 1. Clone the repository to your local machine:
 
-2. Run the Anti-Virus by using:
-   - Windows: python av OR python __main__.py (depends on whetehr you are in the project directory or one layer above it)
-   - Linux: python3 av OR python3 __main__.py (depends on whetehr you are in the project directory or one layer above it)
+2. Navigate to the av directory and run pip install -r requirements.txt in the terminal (installs requests module).
 
-3. Follow on-screen instructions to scan and manage threats.
+3. Run the Anti-Virus by using:
+   - Windows: python av OR python __main__.py (depends on whether you are in the project directory or one layer above it).
+   - Linux: python3 av OR python3 __main__.py (depends on whether you are in the project directory or one layer above it).
+
+4. Follow on-screen instructions to scan and manage threats.
 
 ## Prerequisites
 - Python 3.x installed on your system.
