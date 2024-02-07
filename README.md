@@ -1,8 +1,8 @@
-# AntiVirus for Flash Drive
+# Anti-Virus for Flash Drive
 
 ## Overview
 
-This Python-based AntiVirus for Flash Drives is a lightweight yet effective tool designed to enhance the security of flash drives by scanning for and removing potential threats.
+This Python-based Anti-Virus for Flash Drives is a lightweight yet effective tool designed to enhance the security of flash drives by scanning for and removing potential threats.
 The project uses platform-specific methods to detect flash drives and provides a simple user interface for scanning and handling threats.
 
 ## Features
