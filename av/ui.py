@@ -1,8 +1,10 @@
+# this module handle the gui aspect of the Anti-Virus using tkinter
 import virustotalhandler
 import webbrowser
 import copy
 from tkinter import *
 from tkinter import ttk, messagebox
+from typing import Callable
 
 SHIELD_LOGO = """⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⣾⣿⣿⣷⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -20,47 +22,22 @@ SHIELD_LOGO = """⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣄⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣿⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"""
 
-CAUTION = """                                                                                        
-                                                                                        
-                ░░░░                                                                    
-                                                                                        
-                                            ██                                          
-                                          ██░░██                                        
-  ░░          ░░                        ██░░░░░░██                            ░░░░      
-                                      ██░░░░░░░░░░██                                    
-                                      ██░░░░░░░░░░██                                    
-                                    ██░░░░░░░░░░░░░░██                                  
-                                  ██░░░░░░██████░░░░░░██                                
-                                  ██░░░░░░██████░░░░░░██                                
-                                ██░░░░░░░░██████░░░░░░░░██                              
-                                ██░░░░░░░░██████░░░░░░░░██                              
-                              ██░░░░░░░░░░██████░░░░░░░░░░██                            
-                            ██░░░░░░░░░░░░██████░░░░░░░░░░░░██                          
-                            ██░░░░░░░░░░░░██████░░░░░░░░░░░░██                          
-                          ██░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░██                        
-                          ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██                        
-                        ██░░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░░░██                      
-                        ██░░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░░░██                      
-                      ██░░░░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░░░░░██                    
-        ░░            ██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██                    
-                        ██████████████████████████████████████████                      
-                                                                                        
-                                                                                        
-                                                                                        
-                                                                                        
-                  ░░                                                                    
-"""
 
 TITLE_FONT = ("TkDefaultFont", 16)
 
 
-def clear_window(window):
+def clear_window(window: Tk) -> None:
     for widget in window.winfo_children():
         widget.destroy()
 
 
-def lunch(config):
-    def change_config():
+# the lunch menu, it gets the default configuration and changes it in-place according to the user choices
+def lunch(config: dict) -> None:
+    def reset():
+        lunch_window.destroy()
+        lunch(reset_config)
+
+    def change_config() -> None:
         clear_window(lunch_window)
         lunch_window.title("Configuration Menu")
         top_label = Label(lunch_window, text="Configuration Menu", font=TITLE_FONT)
@@ -73,11 +50,14 @@ def lunch(config):
                                                   f"execute permission check",
                                command=lambda: change_exe(check_exe_btn))
         check_exe_btn.pack(pady=5)
+        reset_btn = Button(lunch_window, text="Reset to default configuration",
+                           command=reset)
+        reset_btn.pack(pady=5)
         lunch_btn = Button(lunch_window, text="Lunch with modified configuration",
                            command=lambda: lunch_window.destroy())
         lunch_btn.pack(pady=5)
 
-    def change_exe(exe_btn):
+    def change_exe(exe_btn: Button) -> None:
         toggle = exe_btn.cget("text").split()[0]
         if toggle == "Disable":
             config["check_exe"] = False
@@ -86,7 +66,7 @@ def lunch(config):
             config["check_exe"] = True
             exe_btn.config(text="Disable execute permission check")
 
-    def inspect_endings():
+    def inspect_endings() -> None:
         clear_window(lunch_window)
         lunch_window.title("Inspect Bad Endings And Names")
         lunch_window.config(padx=10, pady=10)
@@ -115,8 +95,10 @@ def lunch(config):
         add_n_btn = Button(lunch_window, text="Add name", command=lambda: add_page("name"))
         add_n_btn.grid(row=len(default_config["bad_names"]) + 2, column=1, pady=5)
 
-        def add_page(key):
+        def add_page(key: str) -> None:
             clear_window(lunch_window)
+            b_btn = Button(lunch_window, text="Back", command=inspect_endings)
+            b_btn.pack(pady=5)
             ur_ending = Label(lunch_window, text=f"Enter your own {key} below:")
             ur_ending.pack(pady=5)
             entry = Entry(lunch_window)
@@ -124,7 +106,7 @@ def lunch(config):
             Button(lunch_window, text=f"Add {key}",
                    command=lambda: add_ending(entry.get()) if key == "ending" else add_name(entry.get())).pack(pady=5)
 
-        def add_ending(new_ending):
+        def add_ending(new_ending: str) -> None:
             if new_ending in default_config["bad_endings"]:
                 messagebox.showinfo(title="Ending Exists", message="This ending already exists")
             elif len(new_ending) == 0 or new_ending == ".":
@@ -142,7 +124,7 @@ def lunch(config):
                 config["bad_endings"].append(new_ending)
                 inspect_endings()
 
-        def add_name(new_name):
+        def add_name(new_name: str) -> None:
             if new_name in default_config["bad_names"]:
                 messagebox.showinfo(title="File Name Exists", message="This file name already exists")
             elif len(new_name) == 0:
@@ -156,7 +138,7 @@ def lunch(config):
                 config["bad_names"].append(new_name)
                 inspect_endings()
 
-    def handle_check(e, state, key):
+    def handle_check(e: str, state: str, key: str) -> None:
         if state == 1:
             if e not in config[key]:
                 config[key].append(e)
@@ -164,6 +146,7 @@ def lunch(config):
             config[key].remove(e)
 
     default_config = copy.deepcopy(config)
+    reset_config = copy.deepcopy(config)
     lunch_window = Tk()
     lunch_window.title("Lunch Window")
     lunch_window.config(padx=5, pady=5)
@@ -179,7 +162,7 @@ def lunch(config):
     lunch_window.wait_window()
 
 
-def start_popup(window):
+def start_popup(window: Tk) -> None:
     popup = Toplevel(window)
     popup.title("Welcome To The Anti Virus")
     avs = Label(popup, text="Anti Virus Starting", font=TITLE_FONT)
@@ -192,7 +175,7 @@ def start_popup(window):
     popup.wait_window()
 
 
-def end_popup(window):
+def end_popup(window: Tk) -> None:
     popup = Toplevel(window)
     popup.title("Anti Virus Ending")
     ave = Label(popup, text="Anti Virus Ending...", font=TITLE_FONT)
@@ -204,14 +187,15 @@ def end_popup(window):
     window.destroy()
 
 
-def menu(pot_threats, on_remove):
+# the menu where the user can interact with the potential threats tha Anti-Virus found and perform operations on them
+def menu(pot_threats: list[str], on_remove: Callable) -> None:
     menu_window = Tk()
     menu_window.config(pady=10, padx=10)
     menu_window.title("Menu")
     pages = [pot_threats[i:i+7] for i in range(0, len(pot_threats), 7)]
     page_index = 0
 
-    def handle_remove(selected_f, grid_rows):
+    def handle_remove(selected_f: list[str], grid_rows: list[tuple]) -> None:
         results = on_remove(selected_f)
         if results:
             row_to_name = [row[0] for row in grid_rows]
@@ -233,7 +217,7 @@ def menu(pot_threats, on_remove):
             clear_window(menu_window)
             display_menu()
 
-    def handle_vt(file_path):
+    def handle_vt(file_path: str) -> None:
         vt_window = Tk()
         vt_window.config(pady=10, padx=10)
         vt_window.title("VirusTotal Scan")
@@ -251,7 +235,6 @@ def menu(pot_threats, on_remove):
             safe_label = Label(vt_window, text="According to VirusTotal this file is SAFE", fg="green")
             safe_label.pack(pady=5)
         else:
-            Label(vt_window, text=CAUTION).pack(pady=5)
             unsafe_label = Label(vt_window,
                                  text=f"VirusTotal reported {output['positives']} "
                                       f"engines found that this file might be malicious",
@@ -264,11 +247,11 @@ def menu(pot_threats, on_remove):
 
         vt_window.wait_window()
 
-    def handle_check(checked_path, selected_paths):
+    def handle_check(checked_path: str, selected_paths: list[str]) -> None:
         selected_paths.append(checked_path) if checked_path not in selected_paths \
             else selected_paths.remove(checked_path)
 
-    def display_file(file):
+    def display_file(file: str) -> None:
         try:
             with open(file, "r") as f:
                 content = f.read().strip()
@@ -301,26 +284,26 @@ def menu(pot_threats, on_remove):
 
         display_window.wait_window()
 
-    def put_av_labels():
+    def put_av_labels() -> None:
         av_label = Label(menu_window, text="AntiVirus", font=("TkDefaultFont", 16))
-        av_label.grid(row=0, column=0, columnspan=3)
+        av_label.grid(row=0, column=0, columnspan=4)
 
         shield_label = Label(menu_window, text=SHIELD_LOGO)
-        shield_label.grid(row=1, column=0, columnspan=3)
+        shield_label.grid(row=1, column=0, columnspan=4)
 
-    def handle_next():
+    def handle_next() -> None:
         nonlocal page_index
         page_index += 1
         clear_window(menu_window)
         display_menu()
 
-    def handle_prev():
+    def handle_prev() -> None:
         nonlocal page_index
         page_index -= 1
         clear_window(menu_window)
         display_menu()
 
-    def displayable(file):
+    def displayable(file: str) -> bool:
         try:
             with open(file, "r") as f:
                 f.read(10)
@@ -328,13 +311,13 @@ def menu(pot_threats, on_remove):
         except Exception:
             return False
 
-    def nav_btns():
+    def nav_btns() -> int:
         if len(pages) <= 1:
             return 2
         else:
             if page_index < len(pages)-1:
                 next_btn = Button(menu_window, text="Next Page", command=handle_next)
-                next_btn.grid(row=2, column=2, pady=10, sticky=W)
+                next_btn.grid(row=2, column=3, pady=10, sticky=W)
 
             if page_index > 0:
                 prev_btn = Button(menu_window, text="Prev Page", command=handle_prev)
@@ -342,7 +325,12 @@ def menu(pot_threats, on_remove):
 
             return 3
 
-    def display_menu():
+    def show_path(path: str) -> None:
+        w = Tk()
+        Label(w, text=path, pady=10, padx=5).pack()
+        w.wait_window()
+
+    def display_menu() -> None:
         put_av_labels()
 
         curr_page = pages[page_index]
@@ -352,31 +340,31 @@ def menu(pot_threats, on_remove):
         base_indent = nav_btns()
 
         for i in range(len(curr_page)):
-            checkbox = Checkbutton(menu_window, text=curr_page[i], wraplength=300,
+            fn = curr_page[i].split("\\")[-1]
+            checkbox = Checkbutton(menu_window, text=fn, wraplength=300,
                                    command=lambda index=i: handle_check(curr_page[index], selected_files))
-            checkbox.grid(row=i + base_indent, column=0, pady=5, sticky=W)
+            checkbox.grid(row=i+base_indent, column=0, pady=5, sticky=W)
 
             vt_btn = Button(menu_window, text="VirusTotal", command=lambda index=i: handle_vt(curr_page[index]))
-            vt_btn.grid(row=i + base_indent, column=2, pady=5, padx=2)
+            vt_btn.grid(row=i+base_indent, column=2, pady=5, padx=2)
 
-            # trust_btn = Button(window, text="Trust File", command=lambda index=i: print(f"handle_trust({curr_page[index]})"))
-            # trust_btn.grid(row=i + base_indent, column=3, pady=5, padx=2)
+            sfp_btn = Button(menu_window, text="Full Path", command=lambda index=i: show_path(curr_page[index]))
+            sfp_btn.grid(row=i+base_indent, column=3, pady=5, padx=2)
 
             if displayable(curr_page[i]):
                 display_button = Button(menu_window, text="Display", command=lambda index=i: display_file(curr_page[index]))
                 display_button.grid(row=i + base_indent, column=1, pady=5, padx=2)
-                rows.append((curr_page[i], checkbox, display_button, vt_btn))
+                rows.append((curr_page[i], checkbox, display_button, vt_btn, sfp_btn))
             else:
-                rows.append((curr_page[i], checkbox, vt_btn))
+                rows.append((curr_page[i], checkbox, vt_btn, sfp_btn))
 
         remove_btn = Button(menu_window, text="Remove Selected Files", font=("TkDefaultFont", 13), fg="red",
                             command=lambda: handle_remove(selected_files, rows))
-        remove_btn.grid(row=len(curr_page) + base_indent, column=0, pady=5, columnspan=3)
+        remove_btn.grid(row=len(curr_page) + base_indent, column=0, pady=5, columnspan=4)
 
         cont_btn = Button(menu_window, text="End Scan", font=("TkDefaultFont", 13), fg="green",
                           command=lambda: menu_window.destroy())
-        cont_btn.grid(row=len(curr_page) + base_indent + 1, column=0, pady=5, columnspan=3)
-
+        cont_btn.grid(row=len(curr_page) + base_indent + 1, column=0, pady=5, columnspan=4)
         menu_window.wait_window()
 
     display_menu()
